@@ -27,7 +27,7 @@ void clearPage(){
 
 int main (int argc, char *argv[]) {
 	// getting number of rows and columns of the terminal
-    struct winsize w;
+	struct winsize w;
 	int nCol;
 	int nRow;
 	int maxCol = 1000;
@@ -38,9 +38,9 @@ int main (int argc, char *argv[]) {
 	bool firstpass = true;
 	clearPage();
 	placeTerm(0, 0);
-    char line[maxCol];
+	char line[maxCol];
 	int curRow = 0;
-    while(fgets(line, std::min(nCol, maxCol), stdin)!=NULL){
+	while(fgets(line, std::min(nCol, maxCol), stdin)!=NULL){
 		placeTerm(0, curRow+1);
 		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 		nCol = w.ws_col;
