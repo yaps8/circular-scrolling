@@ -1,6 +1,6 @@
 #include "cs.hpp"
 
-char* Color_Off= (char*) "\e[0m";      // Text Reset
+char* Color_Off= (char*) "\e[0m"; // Text Reset
 
 void placeTerm(int x, int y){
 	printf("\033[%u;%uH", y, x);
@@ -23,23 +23,29 @@ void clearLine(int row, int curRow, int nRow, int nCol){
 
 void clearPage(){
 	printf("\033[2J"); // clear the screen
-	placeTerm(0, 0);
 }
 
 int main (int argc, char *argv[]) {
-	// initialization
 	// getting number of rows and columns of the terminal
     struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    int nCol = w.ws_col;
-    int nRow = w.ws_row;
-// 	printf("nC: %d, nR: %d\n", nCol, nRow);
+	int nCol;
+	int nRow;
+	int maxCol = 1000;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	nCol = w.ws_col;
+	nRow = w.ws_row;
 
 	bool firstpass = true;
 	clearPage();
-    char line[nCol];
+	placeTerm(0, 0);
+    char line[maxCol];
 	int curRow = 0;
-    while(fgets(line, nCol, stdin)!=NULL){
+    while(fgets(line, std::min(nCol, maxCol), stdin)!=NULL){
+		placeTerm(0, curRow+1);
+		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+		nCol = w.ws_col;
+		nRow = w.ws_row;
+		
 		int l = strlen(line) - 1;
 		if (line[l] == '\n'){
 			line[l] = '\0';
@@ -52,11 +58,8 @@ int main (int argc, char *argv[]) {
 		}
 		
 		printf("%s", line);
-		if (curRow < nRow - 1){
-			printf("\n");
-		}
+		fflush(stdout);
 		
-		usleep(100000);
 		curRow++;
 		if (curRow > nRow - 1){
 			curRow=0;
@@ -64,7 +67,11 @@ int main (int argc, char *argv[]) {
 			firstpass = false;
 		}
 	}
-	clearLine(nRow, curRow, nRow, nCol);
-	placeTerm(0, nRow);
-// 	clearPage();
+	if (not firstpass){
+		clearLine(nRow, curRow, nRow, nCol);
+		placeTerm(0, nRow);
+	}
+	else {
+		placeTerm(0, curRow+1);
+	}
 }
